@@ -4,6 +4,7 @@ const bodyParser = require("express");
 const app = express();
 const moment = require("moment");
 
+
 const connectionConfig = {
     user: 'root',
     password: '',
@@ -11,6 +12,7 @@ const connectionConfig = {
     port: 3306,
     database: 'lanit_entrance_db',
 };
+
 
 const client = new mysql.createConnection(connectionConfig);
 
@@ -30,8 +32,9 @@ app.use((req, res, next) => {
 
 app.use(express.static(`${__dirname}/public`));
 
-app.get('/user-table', (req, res) => {
+app.get('/users', (req, res) => {
     client.query("SELECT * FROM user;", function (err, results, fields) {
+
         if (err) {
             res.send({
                 status: 'error',
@@ -45,30 +48,64 @@ app.get('/user-table', (req, res) => {
     });
 });
 
-app.put('/update-table', (req, res) => {
-    const id = req.body.user.id;
+app.put('/user/:id', (req, res) => {
+    console.log(req.body);
+    const id = req.params.id;
     const name = req.body.user.name;
     const surname = req.body.user.surname;
     const date_of_birth = req.body.user.date_of_birth;
 
     client.execute("UPDATE user SET name = '" + name + "', surname = '" + surname + "'," +
-        " date_of_birth = '" + moment(date_of_birth).format("DD.MM.YYYY") + "', updated= NOW() WHERE id = "+id+";",
+        " date_of_birth = '" + moment(date_of_birth).format("YYYY-MM-DD") + "', updated= NOW() WHERE id = " + id + ";",
         function (err, result, fields) {
-        if(err) {
-            console.log(err);
-            res.send({
-                status: 'error',
-                message: 'Ошибка работы с базой данных: ' + err.sqlMessage
-            });
-        } else {
+            if (err) {
+                console.log(err);
+                res.send({
+                    status: 'error',
+                    message: 'Ошибка работы с базой данных: ' + err.sqlMessage
+                });
+            } else {
+                res.send({
+                    status: 'success'
+                });
+            }
+        });
+});
+
+app.delete('/user/:id', (req, res) => {
+    const id = req.params.id;
+    client.execute("DELETE FROM user WHERE id=" + id + ";",
+        function (err, result, fields) {
             res.send({
                 status: 'success'
             });
-        }
-    });
+        });
+
 
 });
 
+app.post('/user', (req, res) => {
+    console.log(req.body);
+    const name = req.body.user.name;
+    const surname = req.body.user.surname;
+    const date_of_birth = req.body.user.date_of_birth;
+    client.execute("INSERT INTO user (name, surname, date_of_birth, created, updated) " +
+        "VALUES('" + name + "', '" + surname + "', '" + moment(date_of_birth).format("YYYY-MM-DD") + "', NOW(), NOW());",
+        function (err, result, fields) {
+
+            if (err) {
+                console.log(err);
+                res.send({
+                    status: 'error',
+                    message: 'Ошибка работы с базой данных: ' + err.sqlMessage
+                });
+            } else {
+                res.send({
+                    status: 'success'
+                });
+            }
+        });
+});
 
 app.use((req, res, next) => {
     res.sendStatus(404);
