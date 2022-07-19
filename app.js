@@ -1,6 +1,8 @@
 const express = require("express");
 const mysql = require("mysql2");
+const bodyParser = require("express");
 const app = express();
+const moment = require("moment");
 
 const connectionConfig = {
     user: 'root',
@@ -16,6 +18,9 @@ app.options('*', (req, res) => {
     res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.send();
 });
+
+
+app.use(bodyParser.json());
 
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
@@ -40,14 +45,14 @@ app.get('/user-table', (req, res) => {
     });
 });
 
-app.post('update-table', (req, res) => {
-    const id = req.body.id;
-    const name = req.body.name;
-    const surname = req.body.surname;
-    const date_of_birth = req.body.date_of_birth;
+app.put('/update-table', (req, res) => {
+    const id = req.body.user.id;
+    const name = req.body.user.name;
+    const surname = req.body.user.surname;
+    const date_of_birth = req.body.user.date_of_birth;
 
     client.execute("UPDATE user SET name = '" + name + "', surname = '" + surname + "'," +
-        " date_of_birth = '" + date_of_birth + ", updated= NOW() ' WHERE id = "+id+";",
+        " date_of_birth = '" + moment(date_of_birth).format("DD.MM.YYYY") + "', updated= NOW() WHERE id = "+id+";",
         function (err, result, fields) {
         if(err) {
             console.log(err);
