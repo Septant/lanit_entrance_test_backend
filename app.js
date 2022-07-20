@@ -44,12 +44,10 @@ app.get('/users', (req, res) => {
             status: 'success',
             data: results
         });
-        console.log(results);
     });
 });
 
 app.put('/user/:id', (req, res) => {
-    console.log(req.body);
     const id = req.params.id;
     const name = req.body.user.name;
     const surname = req.body.user.surname;
@@ -59,7 +57,6 @@ app.put('/user/:id', (req, res) => {
         " date_of_birth = '" + moment(date_of_birth).format("YYYY-MM-DD") + "', updated= NOW() WHERE id = " + id + ";",
         function (err, result, fields) {
             if (err) {
-                console.log(err);
                 res.send({
                     status: 'error',
                     message: 'Ошибка работы с базой данных: ' + err.sqlMessage
@@ -76,16 +73,19 @@ app.delete('/user/:id', (req, res) => {
     const id = req.params.id;
     client.execute("DELETE FROM user WHERE id=" + id + ";",
         function (err, result, fields) {
-            res.send({
-                status: 'success'
-            });
+            if (err) {
+                res.send({
+                    status: 'error',
+                    message: 'Ошибка работы с базой данных: ' + err.sqlMessage
+                });
+                res.send({
+                    status: 'success'
+                });
+            }
         });
-
-
 });
 
 app.post('/user', (req, res) => {
-    console.log(req.body);
     const name = req.body.user.name;
     const surname = req.body.user.surname;
     const date_of_birth = req.body.user.date_of_birth;
@@ -94,7 +94,6 @@ app.post('/user', (req, res) => {
         function (err, result, fields) {
 
             if (err) {
-                console.log(err);
                 res.send({
                     status: 'error',
                     message: 'Ошибка работы с базой данных: ' + err.sqlMessage
