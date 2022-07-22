@@ -71,13 +71,15 @@ app.put('/user/:id', (req, res) => {
 
 app.delete('/user/:id', (req, res) => {
     const id = req.params.id;
-    client.execute("DELETE FROM user WHERE id=" + id + ";",
+    client.execute("DELETE FROM user WHERE id="+id+";",
         function (err, result, fields) {
+            console.log(id + ' deleted');
             if (err) {
                 res.send({
                     status: 'error',
                     message: 'Ошибка работы с базой данных: ' + err.sqlMessage
                 });
+            } else {
                 res.send({
                     status: 'success'
                 });
